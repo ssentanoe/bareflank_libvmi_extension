@@ -1,11 +1,9 @@
 cmake_minimum_required(VERSION 3.6)
 project(bareflank_libvmi_extension C CXX)
 
-include(${SOURCE_CMAKE_DIR}/project.cmake)
-init_project()
+init_project(bareflank_libvmi_extension BINARY)
 
-add_vmm_executable(
-    bareflank_libvmi_extension
-    LIBRARIES eapis_hve
-    SOURCES exit_handler.cpp
-)
+target_sources(bareflank_libvmi_extension PRIVATE exit_handler.cpp)
+target_link_libraries(bareflank_libvmi_extension PRIVATE vmm::bfvmm)
+
+fini_project()
