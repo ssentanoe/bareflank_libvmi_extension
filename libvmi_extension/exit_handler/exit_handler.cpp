@@ -132,11 +132,12 @@ public:
 
 		uintptr_t addr = vcpu->rdi();
 		uint64_t size = vcpu->rsi();
-		// auto omap = bfvmm::x64::unique_map<char>(addr,
-		//				vcpu->cr3(),
-		//				size
-		//				);
-		// UNFINISHED
+
+		auto omap = vcpu->map_gva_4k<char>(addr, size);
+
+		auto &&dmp = j.dump();
+
+		__builtin_memcpy(omap.get(), dmp.data(), size);
 
 		bfdebug_info(0, "get-registers vmcall handled");
 	}
