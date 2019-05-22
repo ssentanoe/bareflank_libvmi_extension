@@ -1,3 +1,4 @@
+#include <bfvmm/vcpu/vcpu_factory.h>
 #include <hve/arch/intel_x64/vcpu.h>
 #include <bfdebug.h>
 #include <bfcallonce.h>
@@ -181,4 +182,20 @@ public:
 		bfdebug_info(0, "memmap ept called");
 	}
 };
+}
+
+// -----------------------------------------------------------------------------
+// vCPU Factory
+// -----------------------------------------------------------------------------
+
+namespace bfvmm
+{
+
+std::unique_ptr<vcpu>
+vcpu_factory::make(vcpuid::type vcpuid, bfobject *obj)
+{
+    bfignored(obj);
+    return std::make_unique<libvmi::vcpu>(vcpuid);
+}
+
 }
