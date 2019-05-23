@@ -43,6 +43,8 @@ public:
 	~vcpu() = default;
 	vcpu(vcpuid::type id) : bfvmm::intel_x64::vcpu{id}
 	{
+		bfdebug_info(0, "libvmi extension loaded");
+
 		bfn::call_once(flag, [&] {
 			create_ept();
 		});
@@ -62,16 +64,20 @@ public:
 
 	bool cpuid_handler(vcpu_t *vcpu)
 	{
+		bfdebug_info(0, "called cpuid_handler");
+
 		vcpu->set_rax(42);
 		vcpu->set_rbx(42);
 		vcpu->set_rcx(42);
 		vcpu->set_rdx(42);
 
-		return true;
+		return false;
 	}
 
 	bool vmcall_handler(vcpu_t *vcpu)
 	{
+
+		bfdebug_info(0, "called vmcall_handler");
 		uint64_t hcall = vcpu->rax();
 
 		guard_exceptions([&] 
