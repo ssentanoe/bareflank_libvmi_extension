@@ -2,6 +2,8 @@
 #include <hve/arch/intel_x64/vcpu.h>
 #include <bfdebug.h>
 #include <bfcallonce.h>
+#include <string>
+#include <sstream>
 #include "json.hpp"
 
 using namespace bfvmm::intel_x64;
@@ -80,32 +82,43 @@ public:
 		bfdebug_info(0, "called vmcall_handler");
 		uint64_t hcall = vcpu->rax();
 
+		std::stringstream ss;
+		ss << "called : ";
+		ss << hcall;
+		bfdebug_info(0, ss.str().c_str());
+
 		guard_exceptions([&] 
 		{
+			bfdebug_info(0, "guard guard_exceptions in 1");
 			switch(hcall)
 			{
 				case HCALL_ACK:
-					create_ept(); // reset EPT
 					bfdebug_info(0, "vmcall handled");
+					create_ept(); // reset EPT
 					break;
 				case HCALL_GET_REGISTERS:
+					bfdebug_info(0, "HCALL_GET_REGISTERS start");
 					hcall_get_register_data(vcpu);
 					break;
 				case HCALL_SET_REGISTERS:
 					break;
 				case HCALL_TRANSLATE_V2P:
+					bfdebug_info(0, "HCALL_TRANSLATE_V2P start");
 					hcall_translate_v2p(vcpu);
 					break;
 				case HCALL_MAP_PA:
+					bfdebug_info(0, "HCALL_MAP_PA start");
 					hcall_memmap_ept(vcpu);
 					break;
 				default:
+					bfdebug_info(0, "default");
 					break;
 			};
 
 			vcpu->set_rax(HSTATUS_SUCCESS);
 		},
 		[&] {
+			bfdebug_info(0, "guard guard_exceptions in 2");
 			vcpu->set_rax(HSTATUS_FAILURE);
 		});
 
@@ -152,7 +165,7 @@ public:
 	void hcall_translate_v2p(vcpu_t *vcpu)
 	{
 		auto addr = vcpu->rdi();
-		auto hpa = gva_to_gpa(addr);
+		auto hpa = gva_to_hpa(addr);
 
 		vcpu->set_rdi(hpa.first);
 
@@ -164,7 +177,7 @@ public:
 		uint64_t addr = vcpu->rdi();
 		uint64_t gpa2 = vcpu->rsi();
 
-		auto hpa = gva_to_gpa(addr);
+		auto hpa = gva_to_hpa(addr);
 		auto gpa1 = hpa.first;
 
 		if(g_guest_map.is_2m(gpa1))
