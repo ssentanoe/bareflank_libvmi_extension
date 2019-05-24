@@ -49,7 +49,7 @@ void hcall_memmap_ept(vcpu_t *vcpu)
     uint64_t addr = vcpu->rdi();
     uint64_t gpa2 = vcpu->rsi();
 
-    auto hpa = vcpu->gva_to_hpa(addr);
+    auto hpa = vcpu->gva_to_gpa(addr);
     auto gpa1 = hpa.first;
 
     if(g_guest_map.is_2m(gpa1))
@@ -76,7 +76,7 @@ void hcall_memmap_ept(vcpu_t *vcpu)
 void hcall_translate_v2p(vcpu_t *vcpu)
 {
     auto addr = vcpu->rdi();
-    auto hpa = vcpu->gva_to_hpa(addr);
+    auto hpa = vcpu->gva_to_gpa(addr);
 
     vcpu->set_rdi(hpa.first);
 
@@ -137,12 +137,15 @@ bool vmcall_handler(vcpu_t *vcpu)
         switch (vcpu->rax())
         {
             case HCALL_TRANSLATE_V2P:
+                bfdebug_info(0, "HCALL_TRANSLATE_V2P in");
                 hcall_translate_v2p(vcpu);
                 break;
             case HCALL_GET_REGISTERS:
+                bfdebug_info(0, "HCALL_GET_REGISTERS in");
                 hcall_get_register_data(vcpu);
                 break;
             case HCALL_MAP_PA:
+                bfdebug_info(0, "HCALL_MAP_PA in");
                 hcall_memmap_ept(vcpu);
                 break;
             default:
