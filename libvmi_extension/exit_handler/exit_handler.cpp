@@ -163,10 +163,27 @@ bool vmcall_handler(vcpu_t *vcpu)
     return vcpu->advance();
 }
 
+bool cpuid_magic(vcpu_t *vcpu)
+{
+    if ( vcpu->rax() == 0x40001337 )
+    {
+        bfdebug_info(0, "cpuid_magic adding values");
+        vcpu->set_rax(42);
+        vcpu->set_rbx(42);
+        vcpu->set_rcx(42);
+        vcpu->set_rdx(42);
+        return vcpu->advance();
+    }
+
+    return false;
+}
+
+
 void vcpu_init_nonroot(vcpu_t *vcpu)
 {
     using namespace vmcs_n::exit_reason;
 
     vcpu->set_eptp(g_guest_map);
     vcpu->add_handler(basic_exit_reason::vmcall, vmcall_handler);
+    vcpu->add_handler(basic_exit_reason::cpuid, cpuid_magic);
 }
